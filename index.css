@@ -1,0 +1,429 @@
+/* ============================================================
+   子ども向けポップスタイル
+   ============================================================ */
+:root {
+  --bg-top: #fff7e6;
+  --bg-bottom: #d6f0ff;
+  --orange: #ff9f43;
+  --orange-dark: #f7861a;
+  --blue: #54a0ff;
+  --green: #10ac84;
+  --red: #ee5253;
+  --ink: #4a3b2a;
+  --card: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Kosugi Maru", system-ui, sans-serif;
+  color: var(--ink);
+  background: linear-gradient(160deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+#root {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.app {
+  padding: 16px 16px 48px;
+}
+
+/* --- イラスト素材 --- */
+.hero {
+  display: block;
+  width: 140px;
+  height: auto;
+  margin: 8px auto 0;
+}
+.deco {
+  display: block;
+  width: 96px;
+  height: auto;
+  margin: 4px auto 18px;
+}
+.card-title .icon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+.cam-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+.reveal-img {
+  width: 96px;
+  height: auto;
+  margin-bottom: 8px;
+}
+
+/* --- 見出し --- */
+.title {
+  font-family: "Mochiy Pop One", "Kosugi Maru", sans-serif;
+  color: var(--orange-dark);
+  text-align: center;
+  font-size: 1.6rem;
+  margin: 12px 0 4px;
+  text-shadow: 2px 2px 0 #fff;
+}
+.subtitle {
+  text-align: center;
+  font-size: 0.95rem;
+  margin: 0 0 16px;
+  color: var(--ink);
+}
+
+/* --- ヘッダー --- */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.header .team-name {
+  font-family: "Mochiy Pop One", sans-serif;
+  font-size: 1.1rem;
+  color: var(--orange-dark);
+}
+
+/* --- ボタン --- */
+.btn {
+  font-family: "Mochiy Pop One", "Kosugi Maru", sans-serif;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 20px;
+  font-size: 1.05rem;
+  color: #fff;
+  background: linear-gradient(180deg, var(--orange) 0%, var(--orange-dark) 100%);
+  box-shadow: 0 4px 0 #d76f10, 0 6px 12px rgba(247, 134, 26, 0.3);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  min-height: 48px;
+}
+.btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #d76f10, 0 2px 6px rgba(247, 134, 26, 0.3);
+}
+.btn.blue {
+  background: linear-gradient(180deg, #6cb2ff 0%, var(--blue) 100%);
+  box-shadow: 0 4px 0 #2f7ed8, 0 6px 12px rgba(84, 160, 255, 0.3);
+}
+.btn.blue:active {
+  box-shadow: 0 1px 0 #2f7ed8, 0 2px 6px rgba(84, 160, 255, 0.3);
+}
+.btn.ghost {
+  background: #fff;
+  color: var(--orange-dark);
+  box-shadow: 0 3px 0 #ffd9a8;
+  font-size: 0.9rem;
+  padding: 10px 16px;
+  min-height: 40px;
+}
+.btn.ghost:active {
+  box-shadow: 0 1px 0 #ffd9a8;
+}
+.btn.full {
+  width: 100%;
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* --- カード --- */
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: 0 6px 16px rgba(120, 90, 40, 0.12);
+  margin-bottom: 16px;
+}
+.card-title {
+  font-family: "Mochiy Pop One", sans-serif;
+  font-size: 1rem;
+  margin: 0 0 12px;
+  color: var(--orange-dark);
+}
+
+/* --- チーム選択グリッド --- */
+.team-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.team-btn {
+  position: relative;
+  font-family: "Mochiy Pop One", sans-serif;
+  border: 4px solid #ffe0b8;
+  border-radius: 18px;
+  background: #fff;
+  color: var(--ink);
+  padding: 22px 8px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #ffe0b8;
+}
+.team-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #ffe0b8;
+}
+.badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--green);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-family: "Kosugi Maru", sans-serif;
+}
+
+/* --- 入力欄 --- */
+.cipher-input {
+  width: 100%;
+  border: 3px solid #ffd9a8;
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 1.1rem;
+  font-family: "Kosugi Maru", sans-serif;
+  text-align: center;
+  outline: none;
+  margin-bottom: 12px;
+}
+.cipher-input:focus {
+  border-color: var(--orange);
+}
+
+/* --- 文字カード（収集表示） --- */
+.char-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.char-chip {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Mochiy Pop One", sans-serif;
+  font-size: 1.5rem;
+  border-radius: 12px;
+  background: #fff3e0;
+  border: 2px dashed #ffce93;
+  color: #c9c0b4;
+}
+.char-chip.got {
+  background: linear-gradient(180deg, #ffe08a 0%, #ffc14d 100%);
+  border: 2px solid #ffb321;
+  color: var(--ink);
+  animation: pop 0.4s ease;
+}
+.count {
+  text-align: center;
+  font-family: "Mochiy Pop One", sans-serif;
+  font-size: 1.1rem;
+  margin: 12px 0 4px;
+  color: var(--orange-dark);
+}
+
+/* --- 写真スロット --- */
+.photo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.photo-slot {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  border: 3px dashed #bcd9ff;
+  background: #f0f8ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  color: var(--blue);
+  font-size: 0.85rem;
+  text-align: center;
+}
+.photo-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-slot.uploading {
+  color: var(--blue);
+}
+.photo-hint {
+  padding: 8px;
+}
+
+/* --- 並べ替え画面 --- */
+.arrange-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.arrange-item {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(120, 90, 40, 0.12);
+  user-select: none;
+  -webkit-user-select: none;
+  height: 84px;
+  overflow: hidden;
+}
+.arrange-char {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Mochiy Pop One", sans-serif;
+  font-size: 2.4rem;
+  color: var(--orange-dark);
+}
+.arrange-handle {
+  width: 56px;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: #fff3e0;
+  cursor: grab;
+  touch-action: none;
+}
+.arrange-handle span {
+  width: 22px;
+  height: 3px;
+  border-radius: 2px;
+  background: #ffb321;
+}
+
+/* --- モーダル --- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(60, 40, 10, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 900;
+  padding: 24px;
+}
+.modal-img {
+  max-width: 92vw;
+  max-height: 86vh;
+  object-fit: contain;
+  border-radius: 16px;
+}
+.char-reveal {
+  background: #fff;
+  border-radius: 24px;
+  padding: 28px 24px;
+  text-align: center;
+  max-width: 88vw;
+  animation: pop 0.45s ease;
+}
+.char-reveal .got-label {
+  font-family: "Mochiy Pop One", sans-serif;
+  color: var(--green);
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+}
+.char-reveal .chars {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.char-reveal .big-char {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Mochiy Pop One", sans-serif;
+  font-size: 2.6rem;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #ffe08a 0%, #ffc14d 100%);
+  border: 3px solid #ffb321;
+}
+
+/* --- トースト --- */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 12px 22px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: "Mochiy Pop One", sans-serif;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.25s ease;
+  max-width: 88vw;
+  text-align: center;
+}
+.toast.success { background: var(--green); }
+.toast.error { background: var(--red); }
+.toast.info { background: var(--blue); }
+
+/* --- ローディング --- */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 14px;
+  color: var(--orange-dark);
+  font-family: "Mochiy Pop One", sans-serif;
+}
+.spinner {
+  width: 44px;
+  height: 44px;
+  border: 5px solid #ffe0b8;
+  border-top-color: var(--orange);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translate(-50%, 20px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}

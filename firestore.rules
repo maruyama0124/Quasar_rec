@@ -1,0 +1,39 @@
+rules_version = '2';
+
+// 子ども食堂イベント版 謎解きアプリ Firestore セキュリティルール（厳格）
+// - 匿名認証必須
+// - 既知の6チームのみ read/write 可
+// - スキーマを検証して想定外データを拒否
+// - その他のパスは全拒否
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function knownTeam(id) {
+      return id in ['risa', 'tsubasa', 'muta', 'koharu', 'eito', 'shiori'];
+    }
+
+    function validTeamData(data) {
+      return data.phase in ['collecting', 'arranging']
+        && data.photos is list
+        && data.photos.size() <= 4
+        && data.unlockedChars is list
+        && data.order is list;
+    }
+
+    match /teams/{teamKey} {
+      allow read: if signedIn() && knownTeam(teamKey);
+      allow write: if signedIn()
+        && knownTeam(teamKey)
+        && validTeamData(request.resource.data);
+    }
+
+    // 上記以外はすべて拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
