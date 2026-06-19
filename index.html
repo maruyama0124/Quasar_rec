@@ -3,8 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-    <title>謎解きレクリエーション</title>
-    <script type="module" crossorigin src="/Quasar_rec/assets/index-BVappNYn.js"></script>
+    <title>なぞときたんけんたい</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Mochiy+Pop+One&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      // 白画面デバッグ用: 起きたエラーを画面に表示する（解決したら削除予定）
+      function __showErr(label, detail) {
+        var r = document.getElementById("root");
+        if (r) {
+          r.innerHTML =
+            '<pre style="padding:16px;color:#b00020;white-space:pre-wrap;font:13px/1.5 monospace">' +
+            label + "\n\n" + detail + "</pre>";
+        }
+      }
+      window.addEventListener("error", function (e) {
+        __showErr("[error] " + e.message, (e.error && e.error.stack) || "");
+      });
+      window.addEventListener("unhandledrejection", function (e) {
+        var r = e.reason || {};
+        __showErr("[promise rejected] " + (r.code || r.name || ""), (r.stack || r.message || String(e.reason)));
+      });
+    </script>
+    <script type="module" crossorigin src="/Quasar_rec/assets/index-DF8biqul.js"></script>
+    <link rel="stylesheet" crossorigin href="/Quasar_rec/assets/index-CWyfQN7A.css">
   </head>
   <body>
     <div id="root"></div>
