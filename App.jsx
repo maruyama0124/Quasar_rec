@@ -42,7 +42,6 @@ const CODE_MAP = {
 
 const TOTAL_CHARS = 7;
 const PHOTO_SLOTS = 4;
-const CHAR_BY_ID = { 1: "み", 2: "な", 3: "み", 4: "な", 5: "が", 6: "さ", 7: "き" };
 
 // ============================================================
 // 2. ヘルパー
@@ -223,14 +222,100 @@ function TeamSelectScreen({ onSelect }) {
 }
 
 // ============================================================
-// 5. メイン画面（暗号入力・文字あつめ・写真）
+// 5. あつめた文字の横並び並べ替え（マウス・タッチ両対応 PointerEvents）
+// ============================================================
+
+function SortableChars({ chars, total, onReorder }) {
+  const [items, setItems] = useState(chars);
+  const drag = useRef({ active: false, index: -1 });
+  const itemsRef = useRef(items);
+  const elRefs = useRef([]);
+  itemsRef.current = items;
+
+  // 他端末で順番が変わったら追従（ドラッグ中でなければ）
+  useEffect(() => {
+    if (!drag.current.active) setItems(chars);
+  }, [chars]);
+
+  const down = (e, index) => {
+    e.preventDefault();
+    drag.current = { active: true, index };
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
+    const el = elRefs.current[index];
+    if (el) {
+      el.style.transform = "scale(1.15)";
+      el.style.zIndex = "10";
+    }
+  };
+
+  const move = (e) => {
+    const d = drag.current;
+    if (!d.active) return;
+    const x = e.clientX;
+    let target = d.index;
+    for (let i = 0; i < itemsRef.current.length; i++) {
+      const r = elRefs.current[i]?.getBoundingClientRect();
+      if (r && x >= r.left && x <= r.right) {
+        target = i;
+        break;
+      }
+    }
+    if (target !== d.index) {
+      const arr = [...itemsRef.current];
+      const [m] = arr.splice(d.index, 1);
+      arr.splice(target, 0, m);
+      d.index = target;
+      setItems(arr);
+    }
+  };
+
+  const up = () => {
+    const d = drag.current;
+    if (!d.active) return;
+    const el = elRefs.current[d.index];
+    if (el) {
+      el.style.transform = "";
+      el.style.zIndex = "";
+    }
+    d.active = false;
+    onReorder(itemsRef.current);
+  };
+
+  return (
+    <div className="char-progress">
+      {items.map((c, i) => (
+        <div
+          key={c.id}
+          ref={(el) => (elRefs.current[i] = el)}
+          className="char-chip got draggable"
+          style={{ touchAction: "none" }}
+          onPointerDown={(e) => down(e, i)}
+          onPointerMove={move}
+          onPointerUp={up}
+          onPointerCancel={up}
+        >
+          {c.char}
+        </div>
+      ))}
+      {Array.from({ length: Math.max(0, total - items.length) }).map((_, i) => (
+        <div key={`empty-${i}`} className="char-chip">
+          ?
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ============================================================
+// 6. メイン画面（暗号入力・文字あつめ・写真）
 // ============================================================
 
 function MainScreen({
   data,
   teamKey,
   onUpdate,
-  onGoArrange,
   onChangeTeam,
   showToast,
   showModal,
@@ -238,6 +323,7 @@ function MainScreen({
 }) {
   const [cipherInput, setCipherInput] = useState("");
   const [uploadingSlot, setUploadingSlot] = useState(null);
+  const [confirmed, setConfirmed] = useState(false);
   const fileRefs = useRef([]);
 
   const unlockedIds = data.unlockedChars.map((c) => c.id);
@@ -335,16 +421,14 @@ function MainScreen({
         <div className="count">
           {gotCount} / {TOTAL_CHARS} もじ
         </div>
-        <div className="char-progress">
-          {Array.from({ length: TOTAL_CHARS }).map((_, i) => {
-            const got = data.unlockedChars[i];
-            return (
-              <div key={i} className={`char-chip ${got ? "got" : ""}`}>
-                {got ? got.char : "?"}
-              </div>
-            );
-          })}
-        </div>
+        <p className="subtitle" style={{ margin: "0 0 10px" }}>
+          もじを ドラッグして ならべかえできるよ
+        </p>
+        <SortableChars
+          chars={data.unlockedChars}
+          total={TOTAL_CHARS}
+          onReorder={(arr) => onUpdate({ unlockedChars: arr }).catch(() => {})}
+        />
       </div>
 
       {/* 記念写真 */}
@@ -388,200 +472,23 @@ function MainScreen({
         </div>
       </div>
 
-      {data.phase === "arranging" && (
-        <button className="btn blue full" onClick={onGoArrange}>
-          もじを ならべかえる
-        </button>
-      )}
-    </div>
-  );
-}
-
-// ============================================================
-// 6. 並べ替え画面（touchベースのドラッグ&ドロップ）
-// ============================================================
-
-function ArrangeScreen({ data, onUpdate, onBack, showToast }) {
-  const [order, setOrder] = useState(data.order);
-  const [confirmed, setConfirmed] = useState(false);
-
-  const dragStateRef = useRef({
-    active: false,
-    dragIndex: -1,
-    startY: 0,
-    currentY: 0,
-    itemHeight: 0,
-  });
-  const listRef = useRef(null);
-  const itemRefs = useRef([]);
-  const orderRef = useRef(order);
-  orderRef.current = order;
-
-  // 他端末でorderが変わったら追従（ドラッグ中でなければ）
-  useEffect(() => {
-    if (!dragStateRef.current.active) {
-      setOrder(data.order);
-    }
-  }, [data.order]);
-
-  const onHandleTouchStart = (e, index) => {
-    e.stopPropagation();
-    const touch = e.touches[0];
-    const items = itemRefs.current;
-    const rect = items[index]?.getBoundingClientRect();
-    if (!rect) return;
-
-    dragStateRef.current = {
-      active: true,
-      dragIndex: index,
-      startY: touch.clientY,
-      currentY: touch.clientY,
-      itemHeight: rect.height + 10, // gap=10px
-    };
-
-    if (items[index]) {
-      items[index].style.transform = "scale(1.04)";
-      items[index].style.opacity = "0.9";
-      items[index].style.boxShadow = "0 10px 28px rgba(0,0,0,0.25)";
-      items[index].style.zIndex = "10";
-      items[index].style.transition = "none";
-    }
-  };
-
-  useEffect(() => {
-    const el = listRef.current;
-    if (!el) return;
-
-    const onMove = (e) => {
-      const ds = dragStateRef.current;
-      if (!ds.active) return;
-      e.preventDefault();
-
-      const touch = e.touches[0];
-      ds.currentY = touch.clientY;
-      const deltaY = ds.currentY - ds.startY;
-      const items = itemRefs.current;
-      const dragIdx = ds.dragIndex;
-
-      if (items[dragIdx]) {
-        items[dragIdx].style.transform = `translateY(${deltaY}px) scale(1.04)`;
-      }
-
-      const shiftCount = Math.round(deltaY / ds.itemHeight);
-      const newIndex = Math.max(
-        0,
-        Math.min(orderRef.current.length - 1, dragIdx + shiftCount)
-      );
-
-      for (let i = 0; i < orderRef.current.length; i++) {
-        if (i === dragIdx || !items[i]) continue;
-        items[i].style.transition = "transform 200ms ease";
-        if (
-          (shiftCount > 0 && i > dragIdx && i <= newIndex) ||
-          (shiftCount < 0 && i < dragIdx && i >= newIndex)
-        ) {
-          const dir = shiftCount > 0 ? -1 : 1;
-          items[i].style.transform = `translateY(${dir * ds.itemHeight}px)`;
-        } else {
-          items[i].style.transform = "translateY(0)";
-        }
-      }
-    };
-
-    const onEnd = () => {
-      const ds = dragStateRef.current;
-      if (!ds.active) return;
-
-      const deltaY = ds.currentY - ds.startY;
-      const shiftCount = Math.round(deltaY / ds.itemHeight);
-      const dragIdx = ds.dragIndex;
-      const newIndex = Math.max(
-        0,
-        Math.min(orderRef.current.length - 1, dragIdx + shiftCount)
-      );
-
-      itemRefs.current.forEach((item) => {
-        if (item) {
-          item.style.transform = "";
-          item.style.opacity = "";
-          item.style.boxShadow = "";
-          item.style.zIndex = "";
-          item.style.transition = "";
-        }
-      });
-
-      if (newIndex !== dragIdx) {
-        const newOrder = [...orderRef.current];
-        const [moved] = newOrder.splice(dragIdx, 1);
-        newOrder.splice(newIndex, 0, moved);
-        orderRef.current = newOrder;
-        setOrder(newOrder);
-        setConfirmed(false);
-        onUpdate({ order: newOrder }).catch(() => {});
-      }
-
-      ds.active = false;
-      ds.dragIndex = -1;
-    };
-
-    el.addEventListener("touchmove", onMove, { passive: false });
-    el.addEventListener("touchend", onEnd);
-    return () => {
-      el.removeEventListener("touchmove", onMove);
-      el.removeEventListener("touchend", onEnd);
-    };
-  }, [onUpdate]);
-
-  return (
-    <div className="app">
-      <div className="header">
-        <span className="team-name">{data.teamName}</span>
-        <button className="btn ghost" onClick={onBack}>
-          もじあつめに もどる
-        </button>
-      </div>
-
-      <div className="card">
-        <h2 className="card-title">ただしい じゅんばんに ならべよう！</h2>
-        <p className="subtitle" style={{ margin: "4px 0 0" }}>
-          右の とってを ながおしして うごかせるよ
-        </p>
-      </div>
-
-      <div className="arrange-list" ref={listRef}>
-        {order.map((id, index) => (
-          <div
-            key={`slot-${index}`}
-            ref={(el) => (itemRefs.current[index] = el)}
-            className="arrange-item"
+      {gotCount === TOTAL_CHARS && (
+        <>
+          <button
+            className="btn full"
+            onClick={() => {
+              setConfirmed(true);
+              showToast("おとなのひとに みせてね！", "success");
+            }}
           >
-            <div className="arrange-char">{CHAR_BY_ID[id]}</div>
-            <div
-              className="arrange-handle"
-              onTouchStart={(e) => onHandleTouchStart(e, index)}
-            >
-              <span />
-              <span />
-              <span />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <button
-        className="btn full"
-        style={{ marginTop: 16 }}
-        onClick={() => {
-          setConfirmed(true);
-          showToast("おとなのひとに みせてね！", "success");
-        }}
-      >
-        これで けってい！
-      </button>
-      {confirmed && (
-        <p className="count" style={{ marginTop: 12 }}>
-          おとなのひとに みせてね！
-        </p>
+            これで けってい！
+          </button>
+          {confirmed && (
+            <p className="count" style={{ marginTop: 12 }}>
+              おとなのひとに みせてね！
+            </p>
+          )}
+        </>
       )}
     </div>
   );
@@ -596,7 +503,6 @@ export default function App() {
   const [authReady, setAuthReady] = useState(false);
   const [authError, setAuthError] = useState(false);
   const [data, setData] = useState(null);
-  const [screen, setScreen] = useState("main"); // "main" | "arrange"
 
   const [toast, setToast] = useState(null);
   const [modalImage, setModalImage] = useState(null);
@@ -635,12 +541,6 @@ export default function App() {
     );
     return unsub;
   }, [authReady, teamKey, showToast]);
-
-  // phaseに応じて初期画面を合わせる
-  useEffect(() => {
-    if (data?.phase === "arranging") setScreen("arrange");
-    else setScreen("main");
-  }, [data?.phase]);
 
   const handleUpdate = useCallback(
     (partial) => {
@@ -687,22 +587,12 @@ export default function App() {
         <div>よみこみちゅう…</div>
       </div>
     );
-  } else if (screen === "arrange") {
-    body = (
-      <ArrangeScreen
-        data={data}
-        onUpdate={handleUpdate}
-        onBack={() => setScreen("main")}
-        showToast={showToast}
-      />
-    );
   } else {
     body = (
       <MainScreen
         data={data}
         teamKey={teamKey}
         onUpdate={handleUpdate}
-        onGoArrange={() => setScreen("arrange")}
         onChangeTeam={changeTeam}
         showToast={showToast}
         showModal={showModal}
